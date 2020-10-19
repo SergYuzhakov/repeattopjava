@@ -55,7 +55,7 @@
         </dt>
     </dl>
     <button type="submit">Save</button>
-    <button onclick="goBack()">Cancel</button>
+    <button onclick="goBack()" type="button">Cancel</button>
 </form>
 
 <script>
