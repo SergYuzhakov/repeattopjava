@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
+import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +19,11 @@ public class InMemoryUserRepository implements UserRepository {
     private static final Logger log = LoggerFactory.getLogger(InMemoryUserRepository.class);
     private final Map<Integer, User> userRepository = new ConcurrentHashMap<>();
     private final AtomicInteger counter = new AtomicInteger(0);
+
+    {
+        userRepository.put(counter.getAndIncrement(), MealsUtil.USER);
+        userRepository.put(counter.getAndIncrement(), MealsUtil.ADMIN);
+    }
 
 
     @Override
@@ -40,7 +46,7 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User get(int id) {
-        log.info("get {}", id);
+        log.info("get User with id={}", id);
         return userRepository.get(id);
     }
 
