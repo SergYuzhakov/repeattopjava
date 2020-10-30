@@ -4,6 +4,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public interface MealRepository {
     // null if not found, when updated
@@ -16,4 +17,6 @@ public interface MealRepository {
     Meal get(int id, User user);
 
     List<Meal> getAll(User user);
+
+    List<Meal> getFilteredMealByUser(User user, Predicate<Meal> filter);
 }
