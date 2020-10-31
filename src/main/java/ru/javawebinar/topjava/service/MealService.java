@@ -24,7 +24,7 @@ public class MealService {
     }
 
     public Meal create(Meal meal, User user) {
-        return repository.save(meal, user);
+        return checkNotFoundWithId(repository.save(meal, user), meal.getId());
     }
 
     public void delete(int id, User user) {
@@ -39,7 +39,7 @@ public class MealService {
         return repository.getAll(user);
     }
 
-    public <T extends Comparable<? super T>> List<Meal> getFilteredAll(User user, T start, T end){
+    public <T extends Comparable<T>> List<Meal> getFilteredAll(User user, T start, T end){
         Predicate<Meal> predicate = m -> DateTimeUtil.isBetweenHalfOpen((T)m.getDate(), start, end);
         return repository.getFilteredMealByUser(user, predicate);
     }

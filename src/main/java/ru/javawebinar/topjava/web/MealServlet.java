@@ -30,6 +30,11 @@ public class MealServlet extends HttpServlet {
     }
 
     @Override
+    public void destroy() {
+        super.destroy();
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String id = request.getParameter("id");
@@ -55,6 +60,15 @@ public class MealServlet extends HttpServlet {
                 mealController.delete(id);
                 response.sendRedirect("meals");
                 break;
+            case "filter":
+                log.info("Filter request");
+                request.setAttribute("meals", mealController.getFilteredAll(request.getParameter("dateFrom"),
+                        request.getParameter("dateTo"),
+                        request.getParameter("timeFrom"),
+                        request.getParameter("timeTo")));
+                request.getRequestDispatcher("/meals.jsp").forward(request, response);
+                break;
+
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?

@@ -41,12 +41,18 @@ public class MealRestController {
         return MealsUtil.getTos(service.getAll(SecurityUtil.getAuthUser()), SecurityUtil.authUserCaloriesPerDay());
     }
 
-    public List<MealTo> getFilteredAll(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+    public List<MealTo> getFilteredAll(String startDate, String endDate, String startTime, String endTime) {
         log.info("Get all filtered meals by Date start = {},  end = {} and Time start = {}, end = {}", startDate, endDate, startTime, endTime);
+
+        LocalDate ldStart = startDate.isEmpty() ? LocalDate.MIN : LocalDate.parse(startDate);
+        LocalDate ldEnd = endDate.isEmpty() ? LocalDate.MAX : LocalDate.parse(endDate).plusDays(1); // plus day, because endDay must be included
+        LocalTime ltStart = startTime.isEmpty() ? LocalTime.MIN : LocalTime.parse(startTime);
+        LocalTime ltEnd = endTime.isEmpty() ? LocalTime.MAX : LocalTime.parse(endTime);
+
         return MealsUtil.getFilteredTos
-                (service.getFilteredAll(SecurityUtil.getAuthUser(), startDate, endDate),
+                (service.getFilteredAll(SecurityUtil.getAuthUser(), ldStart, ldEnd),
                         SecurityUtil.authUserCaloriesPerDay(),
-                        startTime,
-                        endTime);
+                        ltStart,
+                        ltEnd);
     }
 }
