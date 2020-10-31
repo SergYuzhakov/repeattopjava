@@ -41,19 +41,19 @@
         <input type="hidden" name="action" value="filter">
         <dl>
             <dt>From Date:</dt>
-            <dd><input type="date" value="${dfrom}" name="dateFrom" ></dd>
+            <dd><input type="date" value="${param.dateFrom}" name="dateFrom" ></dd>
         </dl>
         <dl>
             <dt>To Date:</dt>
-            <dd><input type="date" value="${dto}" name="dateTo" ></dd>
+            <dd><input type="date" value="${param.dateTo}" name="dateTo" ></dd>
         </dl>
         <dl>
             <dt>From Time:</dt>
-            <dd><input type="time" value="${tfrom}" name="timeFrom" ></dd>
+            <dd><input type="time" value="${param.timeFrom}" name="timeFrom" ></dd>
         </dl>
         <dl>
             <dt>To Time:</dt>
-            <dd><input type="time" value="${tto}" name="timeTo" ></dd>
+            <dd><input type="time" value="${param.timeTo}" name="timeTo" ></dd>
         </dl>
         <button type="submit">Filter</button>
     </form>
