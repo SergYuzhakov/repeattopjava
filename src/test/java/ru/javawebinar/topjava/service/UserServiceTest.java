@@ -1,5 +1,7 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.javawebinar.topjava.JUnitStat;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -28,6 +31,14 @@ public class UserServiceTest {
 
     @Autowired
     private UserService service;
+
+    @Rule
+    public JUnitStat stat = new JUnitStat();
+
+    @AfterClass
+    public static void printStat() {
+        JUnitStat.printStatistic();
+    }
 
     @Test
     public void create() throws Exception {
