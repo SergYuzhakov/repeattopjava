@@ -17,8 +17,6 @@
         <jdbc:script encoding="utf-8" location="classpath:db/populateDB.sql"/>
     </jdbc:initialize-database>
 
-    <tx:annotation-driven/>
-
 
     <beans profile="hsqldb">
         <context:property-placeholder location="classpath:db/hsqldb.properties" system-properties-mode="OVERRIDE"/>
@@ -99,6 +97,7 @@
             </property>
         </bean>
 
+        <tx:annotation-driven/>
 
     </beans>
 
