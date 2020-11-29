@@ -53,12 +53,15 @@ public class User extends AbstractNamedEntity {
     @Column(name = "calories_per_day", nullable = false, columnDefinition = "int default 2000")
     @Range(min = 10, max = 10000)
     private int caloriesPerDay = DEFAULT_CALORIES_PER_DAY;
-/*
-    @ManyToOne
+
+    @OneToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY, mappedBy = "user")
+    @OrderBy("dateTime DESC")
     private List<Meal> meals;
 
+    public List<Meal> getMeals() {
+        return meals;
+    }
 
- */
     public User() {
     }
 

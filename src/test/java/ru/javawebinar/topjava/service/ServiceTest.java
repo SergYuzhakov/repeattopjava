@@ -50,7 +50,7 @@ public abstract class ServiceTest {
                 "\n---------------------------------" +
                 results +
                 "\n---------------------------------");
-        results.delete(0, results.length()-1);
+        results.setLength(0);
     }
 
 }
