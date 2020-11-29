@@ -15,14 +15,11 @@ import static ru.javawebinar.topjava.UserTestData.*;
 @ActiveProfiles(Profiles.DATAJPA)
 public class DataJpaMealServiceTest extends MealServiceTest {
 
-    //public static TestMatcher<Meal> MEAL_MATCHER_WITH_USER = TestMatcher.usingIgnoringFieldsComparator("role");
-
     @Test
     public void getMealWithUser() {
         Meal meal = service.getWithUser(ADMIN_MEAL_ID, ADMIN_ID);
-        Meal expected = adminMeal1;
-        expected.setUser(admin);
-        MEAL_MATCHER.assertMatch(meal, expected);
+        MEAL_MATCHER.assertMatch(meal, adminMeal1);
+        USER_MATCHER.assertMatch(meal.getUser(), admin);
     }
 
     @Test
