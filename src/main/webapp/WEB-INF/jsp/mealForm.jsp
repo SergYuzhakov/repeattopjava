@@ -4,7 +4,6 @@
 
 <html>
 <jsp:include page="fragments/headTag.jsp"/>
-</head>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
@@ -12,7 +11,7 @@
     <h2><spring:message code="mealform.title.${param.action == 'add' ? 'add' : 'edit'}"/></h2>
 
     <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <form method="post" action="save">
+    <form method="post" action="meals/save">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="mealform.date"/></dt>

@@ -5,9 +5,6 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <html>
 <jsp:include page="fragments/headTag.jsp"/>
-<head>
-    <base href="topjava">
-</head>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
