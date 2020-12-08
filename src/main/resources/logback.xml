@@ -20,6 +20,9 @@
         </encoder>
     </appender>
 
+    <logger name="org.springframework.transaction" level="TRACE">
+        <appender-ref ref="spring-t" />
+    </logger>
     <logger name="ru.javawebinar.topjava" level="debug"/>
     <logger name="org.springframework.web.servlet" level="debug"/>
 
