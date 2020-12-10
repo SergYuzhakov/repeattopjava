@@ -1,7 +1,8 @@
 package ru.javawebinar.topjava.repository.jdbc;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -9,13 +10,18 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.javawebinar.topjava.Profiles;
+import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-@Repository
-public class JdbcUserRepository implements UserRepository {
+@Transactional(readOnly = true)
+public abstract class JdbcUserRepository implements UserRepository {
 
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
@@ -25,7 +31,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private final SimpleJdbcInsert insertUser;
 
-    @Autowired
+
     public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.insertUser = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
@@ -34,6 +40,8 @@ public class JdbcUserRepository implements UserRepository {
         this.jdbcTemplate = jdbcTemplate;
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
+
+    protected abstract String roleAgregator();
 
     @Override
     @Transactional
@@ -49,6 +57,25 @@ public class JdbcUserRepository implements UserRepository {
                 """, parameterSource) == 0) {
             return null;
         }
+        jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.id());
+
+        String sql = "INSERT INTO user_roles (role, user_id) VALUES (?,?)";
+        final List<Role> roles = new ArrayList<>(user.getRoles());
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                preparedStatement.setString(1, roles.get(i).name());
+                preparedStatement.setInt(2, user.id());
+
+            }
+
+            @Override
+            public int getBatchSize() {
+                return roles.size();
+            }
+        });
+
         return user;
     }
 
@@ -60,19 +87,56 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public User get(int id) {
-        List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE id=?", ROW_MAPPER, id);
+        List<User> users = jdbcTemplate.query(roleAgregator() +
+                " WHERE id=?", ROW_MAPPER, id);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public User getByEmail(String email) {
 //        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
-        List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
+        List<User> users = jdbcTemplate.query(roleAgregator() +
+                " WHERE email=?", ROW_MAPPER, email);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query("SELECT * FROM users ORDER BY name, email", ROW_MAPPER);
+        return jdbcTemplate.query(roleAgregator() +
+                " ORDER BY name, email", ROW_MAPPER);
+    }
+
+    @Repository
+    @Profile(Profiles.POSTGRES_DB)
+    public static class PostgresJdbcUserRepository extends JdbcUserRepository {
+        public PostgresJdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+            super(jdbcTemplate, namedParameterJdbcTemplate);
+        }
+
+        @Override
+        protected String roleAgregator() {
+            return "SELECT * FROM users LEFT JOIN " +
+                    "(SELECT user_id," +
+                    "string_AGG (DISTINCT role,',')AS roles " +
+                    "FROM user_roles GROUP BY user_id)AS u_roles " +
+                    "ON users.id = u_roles.user_id";
+        }
+    }
+
+    @Repository
+    @Profile(Profiles.HSQL_DB)
+    public static class HsqldbJdbcUserRepository extends JdbcUserRepository {
+        public HsqldbJdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+            super(jdbcTemplate, namedParameterJdbcTemplate);
+        }
+
+        @Override
+        protected String roleAgregator() {
+            return "SELECT * FROM users LEFT JOIN " +
+                    "(SELECT user_id," +
+                    "GROUP_CONCAT(DISTINCT role)AS roles " +
+                    "FROM user_roles GROUP BY user_id)AS u_roles " +
+                    "ON users.id = u_roles.user_id";
+        }
     }
 }
