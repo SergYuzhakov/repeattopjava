@@ -1,27 +1,28 @@
 package ru.javawebinar.topjava.repository.jdbc;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javawebinar.topjava.Profiles;
+import org.springframework.util.CollectionUtils;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+@Repository
 @Transactional(readOnly = true)
-public abstract class JdbcUserRepository implements UserRepository {
+public class JdbcUserRepository implements UserRepository {
 
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
@@ -41,8 +42,6 @@ public abstract class JdbcUserRepository implements UserRepository {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
-    protected abstract String roleAgregator();
-
     @Override
     @Transactional
     public User save(User user) {
@@ -51,31 +50,16 @@ public abstract class JdbcUserRepository implements UserRepository {
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
+            insertRoles(user);
         } else if (namedParameterJdbcTemplate.update("""
                    UPDATE users SET name=:name, email=:email, password=:password, 
                    registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
                 """, parameterSource) == 0) {
             return null;
         }
-        jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.id());
 
-        String sql = "INSERT INTO user_roles (role, user_id) VALUES (?,?)";
-        final List<Role> roles = new ArrayList<>(user.getRoles());
-
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
-                preparedStatement.setString(1, roles.get(i).name());
-                preparedStatement.setInt(2, user.id());
-
-            }
-
-            @Override
-            public int getBatchSize() {
-                return roles.size();
-            }
-        });
-
+        deleteRoles(user);
+        insertRoles(user);
         return user;
     }
 
@@ -87,56 +71,67 @@ public abstract class JdbcUserRepository implements UserRepository {
 
     @Override
     public User get(int id) {
-        List<User> users = jdbcTemplate.query(roleAgregator() +
+        List<User> users = jdbcTemplate.query("SELECT * FROM users " +
                 " WHERE id=?", ROW_MAPPER, id);
-        return DataAccessUtils.singleResult(users);
+        return setRoles(DataAccessUtils.singleResult(users));
     }
 
     @Override
     public User getByEmail(String email) {
 //        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
-        List<User> users = jdbcTemplate.query(roleAgregator() +
+        List<User> users = jdbcTemplate.query("SELECT * FROM users " +
                 " WHERE email=?", ROW_MAPPER, email);
-        return DataAccessUtils.singleResult(users);
+        return setRoles(DataAccessUtils.singleResult(users));
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query(roleAgregator() +
-                " ORDER BY name, email", ROW_MAPPER);
+        Map<Integer, Set<Role>> mapRole = new HashMap<>();
+        jdbcTemplate.query("SELECT * FROM user_roles", new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                mapRole.computeIfAbsent(rs.getInt("user_id"), key -> EnumSet.noneOf(Role.class))
+                        .add(Role.valueOf(rs.getString("role")));
+            }
+        });
+
+        List<User> users = jdbcTemplate.query("SELECT * FROM users ORDER by users.name, email", ROW_MAPPER);
+        users.forEach(u -> u.setRoles(mapRole.get(u.getId())));
+        return users;
     }
 
-    @Repository
-    @Profile(Profiles.POSTGRES_DB)
-    public static class PostgresJdbcUserRepository extends JdbcUserRepository {
-        public PostgresJdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-            super(jdbcTemplate, namedParameterJdbcTemplate);
-        }
-
-        @Override
-        protected String roleAgregator() {
-            return "SELECT * FROM users LEFT JOIN " +
-                    "(SELECT user_id," +
-                    "string_AGG (DISTINCT role,',')AS roles " +
-                    "FROM user_roles GROUP BY user_id)AS u_roles " +
-                    "ON users.id = u_roles.user_id";
-        }
+    private void deleteRoles(User user) {
+        jdbcTemplate.update("DELETE FROM user_roles ur WHERE user_id=?", user.getId());
     }
 
-    @Repository
-    @Profile(Profiles.HSQL_DB)
-    public static class HsqldbJdbcUserRepository extends JdbcUserRepository {
-        public HsqldbJdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-            super(jdbcTemplate, namedParameterJdbcTemplate);
+    private void insertRoles(User user) {
+        List<Role> roles = new ArrayList<>(user.getRoles());
+
+        if (!CollectionUtils.isEmpty(roles)) {
+            jdbcTemplate.batchUpdate("INSERT INTO user_roles (user_id, role) VALUES (?,?)", new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                    preparedStatement.setInt(1, user.getId());
+                    preparedStatement.setString(2, roles.get(i).name());
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return roles.size();
+                }
+            });
         }
 
-        @Override
-        protected String roleAgregator() {
-            return "SELECT * FROM users LEFT JOIN " +
-                    "(SELECT user_id," +
-                    "GROUP_CONCAT(DISTINCT role)AS roles " +
-                    "FROM user_roles GROUP BY user_id)AS u_roles " +
-                    "ON users.id = u_roles.user_id";
-        }
     }
+
+    private User setRoles(User user) {
+        if (user != null) {
+            List<Role> roles = jdbcTemplate.queryForList("SELECT ur.role FROM user_roles ur WHERE ur.user_id=? "
+                    , Role.class, user.getId());
+            user.setRoles(roles);
+        }
+        return user;
+
+    }
+
 }
