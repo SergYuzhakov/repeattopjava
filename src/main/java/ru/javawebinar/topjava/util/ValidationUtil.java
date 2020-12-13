@@ -3,7 +3,26 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.AbstractBaseEntity;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import javax.validation.*;
+import java.util.Set;
+
 public class ValidationUtil {
+
+    private static final Validator validation;
+
+    static {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validation = factory.getValidator();
+    }
+
+    public static <T> void validate(T bean) {
+        // https://alexkosarev.name/2018/07/30/bean-validation-api/
+        Set<ConstraintViolation<T>> violations = validation.validate(bean);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+    }
+
     private ValidationUtil() {
     }
 
