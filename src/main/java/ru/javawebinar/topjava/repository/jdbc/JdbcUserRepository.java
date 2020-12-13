@@ -105,14 +105,16 @@ public class JdbcUserRepository implements UserRepository {
     }
 
     private void insertRoles(User user) {
-        List<Role> roles = new ArrayList<>(user.getRoles());
+        Set<Role> roles = user.getRoles();
+        Iterator<Role> iterator = roles.iterator();
 
         if (!CollectionUtils.isEmpty(roles)) {
-            jdbcTemplate.batchUpdate("INSERT INTO user_roles (user_id, role) VALUES (?,?)", new BatchPreparedStatementSetter() {
+            jdbcTemplate.batchUpdate("INSERT INTO user_roles (user_id, role) VALUES (?,?)",
+                    new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
                     preparedStatement.setInt(1, user.getId());
-                    preparedStatement.setString(2, roles.get(i).name());
+                    preparedStatement.setString(2, iterator.next().name());
                 }
 
                 @Override
