@@ -56,7 +56,7 @@ public class MealRestController extends AbstractMealController {
     }
 
 
-    @GetMapping(value = "/filter")
+    @GetMapping(value = "/between")
     public List<MealTo> getBetween(@RequestParam(value = "startDateTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
                                    @RequestParam("endDateTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime
     ) {
