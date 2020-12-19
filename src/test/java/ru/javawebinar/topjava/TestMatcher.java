@@ -44,12 +44,4 @@ public class TestMatcher<T> {
         return result -> assertMatch(readListFromJsonMvcResult(result, clazz), expected);
     }
 
-    public ResultMatcher contentJsonTo(Iterable<T>  expected) {
-        return result -> assertMatchTo(readListFromJsonMvcResult(result, clazz), expected);
-    }
-
-    private <T> void assertMatchTo(Iterable<T> actual, Iterable<T> expected) {
-        assertThat(actual).isEqualTo(expected);
-
-    }
 }

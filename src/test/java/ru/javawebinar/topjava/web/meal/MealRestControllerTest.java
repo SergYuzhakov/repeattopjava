@@ -47,7 +47,7 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(MEALTO_MATCHER.contentJsonTo(MealsUtil.getTos(MealTestData.meals, SecurityUtil.authUserCaloriesPerDay())));
+                .andExpect(MEALTO_MATCHER.contentJson(MealsUtil.getTos(MealTestData.meals, SecurityUtil.authUserCaloriesPerDay())));
     }
 
     @Test
