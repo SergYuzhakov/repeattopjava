@@ -7,20 +7,25 @@
 ### 3. Get meal by id(id=100006):
 `curl http://localhost:8080/topjava/rest/meals/100006`
 ### 4. Add new meal:
-`curl  -X POST http://localhost:8080/topjava/rest/meals
+`curl -s -X POST http://localhost:8080/topjava/rest/meals
 -H "Content-Type: application/json" 
--d {
+-d '{
 "dateTime": "2020-12-15T08:00:00",
 "description": "Breakfast",
 "calories": 666
-}`
+}'`
 ### 5. Update existing meal by id:
-`curl -X PUT http://localhost:8080/topjava/rest/meals/100006 
--H "Content-Type: application/json" 
--d{
-     "dateTime": "2020-01-31T10:00:00",
-    "description": "Завтрак2",
-    "calories": 499
-}`
+`curl -s -X PUT http://localhost:8080/topjava/rest/meals/100006
+-H "Content-Type: application/json"
+-d 
+'{"dateTime":"2020-01-31T08:00", 
+"description":"Updated breakfast", 
+"calories":200}'
+`
 ### 6. Delete existing meal by id(id=100006):
 `curl -X DELETE http://localhost:8080/topjava/rest/meals/100006`
+### 7. Get all users:
+`curl -s http://localhost:8080/topjava/rest/admin/users`
+### 8. Get user by id(id=100000)
+`curl -s http://localhost:8080/topjava/rest/admin/users/100000`
+
