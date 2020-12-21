@@ -13,9 +13,9 @@ import java.util.List;
 
 @Controller
 @RequestMapping(MealUIController.AJAX_URL)
-public class MealUIController extends AbstractMealController{
+public class MealUIController extends AbstractMealController {
 
-    static final String AJAX_URL = "/ajax/meals" ;
+    static final String AJAX_URL = "/meals";
 
     @Override
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,10 +33,10 @@ public class MealUIController extends AbstractMealController{
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void create (@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime localDateTime,
-                        @RequestParam String description,
-                        @RequestParam Integer calories) {
+    public void create(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime localDateTime,
+                       @RequestParam String description,
+                       @RequestParam Integer calories) {
         Meal meal = new Meal(localDateTime, description, calories);
-
+        super.create(meal);
     }
 }
