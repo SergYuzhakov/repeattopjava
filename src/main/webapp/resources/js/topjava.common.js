@@ -2,11 +2,11 @@ var form;
 
 function makeEditable() {
     form = $('#detailsForm');
-    $(".delete").click(function () {
+    $(".delete").on("click",(function () {
         if (confirm('Are you sure?')) {
-            deleteRow($(this).attr("id"));
+            deleteRow($(this).closest('tr').attr("data-id"));
         }
-    });
+    }));
 
     $(document).ajaxError(function (event, jqXHR, options, jsExc) {
         failNoty(jqXHR);
