@@ -37,3 +37,18 @@ $(function () {
     };
     makeEditable();
 });
+
+function filter() {
+    $.ajax({
+        url: ctx.ajaxUrl + "/filter",
+        type: "GET",
+        data: $("#filterForm").serialize()
+    }).done(function () {
+        updateTable()
+        successNoty("Filtered");
+    });
+}
+
+function clearFilter(){
+
+}
