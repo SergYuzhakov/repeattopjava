@@ -40,12 +40,27 @@ $(function () {
                 ]
             ]
         }),
-        update:updateUserTable
+        update: updateUserTable
 
     };
     makeEditable();
 });
 
-function updateUserTable(){
+function updateUserTable() {
     $.get(ctx.ajaxUrl, updateTableByData);
+}
+
+function enableUser(checkbox) {
+    var id = checkbox.closest('tr').attr("data-id")
+    var enabled = checkbox.is(":checked");
+    $.ajax({
+        url: "admin/users/" + id,
+        type: "POST",
+        data: "enabled=" + enabled
+    }).done(function () {
+        checkbox.closest('tr').attr("data-userEnabled", enabled);
+        successNoty(enabled ? "User Actvated" : "User Diactivated");
+    }).fail(function () {
+        checkbox.prop("checked", !enabled);
+    });
 }
