@@ -4,7 +4,7 @@ var ctx;
 $(function () {
     // https://stackoverflow.com/a/5064235/548473
     ctx = {
-        ajaxUrl: "meals/",
+        ajaxUrl: "profile/meals/",
         datatableApi: $("#datatable").DataTable({
             "paging": false,
             "info": true,
@@ -33,22 +33,24 @@ $(function () {
                     "desc"
                 ]
             ]
-        })
+        }),
+        update: filter
     };
     makeEditable();
+
 });
 
 function filter() {
     $.ajax({
-        url: ctx.ajaxUrl + "/filter",
         type: "GET",
+        url: ctx.ajaxUrl + "filter",
         data: $("#filterForm").serialize()
-    }).done(function () {
-        updateTable()
-        successNoty("Filtered");
-    });
+    }).done(updateTableByData);
+
 }
 
-function clearFilter(){
+function clearFilter() {
+    $("#filterForm")[0].reset();
+    $.get(ctx.ajaxUrl, updateTableByData)
 
 }

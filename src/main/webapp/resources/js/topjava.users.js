@@ -39,7 +39,13 @@ $(function () {
                     "asc"
                 ]
             ]
-        })
+        }),
+        update:updateUserTable
+
     };
     makeEditable();
 });
+
+function updateUserTable(){
+    $.get(ctx.ajaxUrl, updateTableByData);
+}

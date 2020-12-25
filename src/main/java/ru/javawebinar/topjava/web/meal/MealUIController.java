@@ -14,7 +14,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/meals")
+@RequestMapping("/profile/meals")
 public class MealUIController extends AbstractMealController {
 
 
@@ -23,6 +23,7 @@ public class MealUIController extends AbstractMealController {
     public List<MealTo> getAll() {
         return super.getAll();
     }
+
 
     @Override
     @DeleteMapping("/{id}")

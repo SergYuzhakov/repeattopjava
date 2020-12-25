@@ -18,28 +18,28 @@
             <div class="row">
                 <div class="col-3">
                     <label for="startDate"><spring:message code="meal.startDate"/></label>
-                    <input class="form-control" type="date" name="startDate" id="startDate" value="${param.startDate}">
+                    <input class="form-control" type="date" name="startDate" id="startDate">
                 </div>
                 <div class="col-3">
                     <label for="endDate"><spring:message code="meal.endDate"/></label>
-                    <input class="form-control" type="date" name="endDate" id="endDate" value="${param.endDate}">
+                    <input class="form-control" type="date" name="endDate" id="endDate">
                 </div>
-                <div class="col-3">
+                <div class="offset-2 col-2">
                     <label for="startTime"><spring:message code="meal.startTime"/></label>
-                    <input class="form-control" type="time" name="startTime" id="startTime" value="${param.startTime}">
+                    <input class="form-control" type="time" name="startTime" id="startTime">
                 </div>
-                <div class="col-3">
+                <div class="col-2">
                     <label for="endTime"><spring:message code="meal.endTime"/></label>
-                    <input class="form-control" type="time" name="endTime" id="endTime" value="${param.endTime}">
+                    <input class="form-control" type="time" name="endTime" id="endTime">
                 </div>
                 <div class="card-footer text-center">
-                    <button class="btn btn-primary" onclick="filter()">
-                        <span class="fa fa-plus"></span>
-                        <spring:message code="meal.filter"/>
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearFilter()">
+                    <button class="btn btn-danger" onclick="clearFilter()">
                         <span class="fa fa-remove"></span>
                         <spring:message code="common.cancel"/>
+                    </button>
+                    <button class="btn btn-primary" onclick="filter()">
+                        <span class="fa fa-filter"></span>
+                        <spring:message code="meal.filter"/>
                     </button>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                     <td>${meal.description}</td>
                     <td>${meal.calories}</td>
                     <td><a><span class="fa fa-pencil"></span></a></td>
-                    <td><a class="delete"><span class="fa fa-remove"></span></a></td>
+                    <td><a onclick="deleteRow(${meal.id})"><span class="fa fa-remove"></span></a></td>
                 </tr>
             </c:forEach>
         </table>
