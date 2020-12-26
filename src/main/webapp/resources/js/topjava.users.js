@@ -54,12 +54,12 @@ function enableUser(checkbox) {
     var id = checkbox.closest('tr').attr("data-id")
     var enabled = checkbox.is(":checked");
     $.ajax({
-        url: "admin/users/" + id,
+        url: ctx.ajaxUrl + id,
         type: "POST",
         data: "enabled=" + enabled
     }).done(function () {
         checkbox.closest('tr').attr("data-userEnabled", enabled);
-        successNoty(enabled ? "User Actvated" : "User Diactivated");
+        successNoty(enabled ? "User Activated" : "User Deactivated");
     }).fail(function () {
         checkbox.prop("checked", !enabled);
     });

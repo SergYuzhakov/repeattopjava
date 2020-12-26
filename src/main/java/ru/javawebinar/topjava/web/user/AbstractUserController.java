@@ -50,7 +50,12 @@ public abstract class AbstractUserController {
     }
 
     public void enable(int id, boolean enabled){
-        log.info( enabled ? "Activated user {}" : "Diactivated user {}", id);
+        log.info( enabled ? "Activated user {}" : "Deactivated user {}", id);
         service.enable(id, enabled);
+    }
+
+    public User getWithMeals(int id){
+        log.info("Get User id={} with Meals", id);
+        return service.getWithMeals(id);
     }
 }
