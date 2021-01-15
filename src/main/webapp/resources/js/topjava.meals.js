@@ -1,11 +1,14 @@
-var ctx, mealAjaxUrl = "profile/meals/";
+var mealAjaxUrl = "profile/meals/";
 
-function updateFilteredTable() {
-    $.ajax({
-        type: "GET",
-        url: mealAjaxUrl + "filter",
-        data: $("#filter").serialize()
-    }).done(updateTableByData);
+var ctx = {
+    ajaxUrl: mealAjaxUrl,
+    updateTable: function () {
+        $.ajax({
+            type: "GET",
+            url: mealAjaxUrl + "filter",
+            data: $("#filter").serialize()
+        }).done(updateTableByData);
+    }
 }
 
 function clearFilter() {
@@ -13,64 +16,47 @@ function clearFilter() {
     $.get(mealAjaxUrl, updateTableByData);
 }
 
-$.ajaxSetup({
-    converters: {
-        "text json": function (text) {
-            var json = JSON.parse(text);
-            $(json).each(function () {
-                this.dateTime = this.dateTime.replace('T', ' ').substr(0, 16);
-            });
-            return json;
-        }
-    }
-});
-
 
 $(function () {
-    ctx = {
-        ajaxUrl: mealAjaxUrl,
-        datatableApi: $("#datatable").DataTable({
-            "ajax": {
-                "url": mealAjaxUrl,
-                "dataSrc": ""
-            },
-            "paging": false,
-            "info": true,
-            "columns": [
-                {
-                    "data": "dateTime",
-                },
-                {
-                    "data": "description"
-                },
-                {
-                    "data": "calories"
-                },
-                {
-                    "defaultContent": "",
-                    "orderable": false,
-                    "render": renderEditBtn
-                },
-                {
-                    "defaultContent": "",
-                    "orderable": false,
-                    "render": renderDeleteBtn
+    makeEditable({
+        "columns": [
+            {
+                "data": "dateTime",
+                "render": function (data, type, row) {
+                    if (type === "display") {
+                        return formatDate(data);
+                    }
+                    return data;
                 }
-            ],
-            "order": [
-                [
-                    0,
-                    "desc"
-                ]
-            ],
-            "createdRow": function (row, data, dataIndex) {
-                $(row).attr("data-mealExcess", data.excess);
+            },
+            {
+                "data": "description"
+            },
+            {
+                "data": "calories"
+            },
+            {
+                "defaultContent": "",
+                "orderable": false,
+                "render": renderEditBtn
+            },
+            {
+                "defaultContent": "",
+                "orderable": false,
+                "render": renderDeleteBtn
             }
-        }),
-        updateTable: updateFilteredTable
+        ],
+        "order": [
+            [
+                0,
+                "desc"
+            ]
+        ],
+        "createdRow": function (row, data, dataIndex) {
+            $(row).attr("data-mealExcess", data.excess);
+        }
+    });
 
-    };
-    makeEditable();
 
     $.datetimepicker.setLocale('en');
 
@@ -102,6 +88,6 @@ $(function () {
         format: 'H:i'
     });
     $('#dateTime').datetimepicker({
-        format: "Y-m-d\\TH:i"
+        format: "Y-m-d H:i"
     });
 });
