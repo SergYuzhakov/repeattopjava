@@ -11,6 +11,10 @@ var ctx = {
     }
 }
 
+function updateFilteredTable(){
+   ctx.updateTable()
+}
+
 function clearFilter() {
     $("#filter")[0].reset();
     $.get(mealAjaxUrl, updateTableByData);
@@ -21,13 +25,7 @@ $(function () {
     makeEditable({
         "columns": [
             {
-                "data": "dateTime",
-                "render": function (data, type, row) {
-                    if (type === "display") {
-                        return formatDate(data);
-                    }
-                    return data;
-                }
+                "data": "dateTimeUI",
             },
             {
                 "data": "description"
