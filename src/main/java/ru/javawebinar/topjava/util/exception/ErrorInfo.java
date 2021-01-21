@@ -8,6 +8,9 @@ public class ErrorInfo {
     private  ErrorType type;
     private  List<String> details;
 
+    public ErrorInfo() {
+    }
+
     public ErrorInfo(CharSequence url, ErrorType type, List<String> details) {
         this.url = url.toString();
         this.type = type;
@@ -21,4 +24,27 @@ public class ErrorInfo {
         this.details.add(detail);
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public ErrorType getType() {
+        return type;
+    }
+
+    public List<String> getDetails() {
+        return details;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setType(ErrorType type) {
+        this.type = type;
+    }
+
+    public void setDetails(List<String> details) {
+        this.details = details;
+    }
 }

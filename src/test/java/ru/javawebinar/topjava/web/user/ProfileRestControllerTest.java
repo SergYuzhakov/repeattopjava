@@ -9,9 +9,13 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.UserUtil;
+import ru.javawebinar.topjava.util.exception.ErrorInfo;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -87,4 +91,36 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(USER_WITH_MEALS_MATCHER.contentJson(user));
     }
+
+    @Test
+    void registerNotValidData() throws Exception {
+        UserTo newTo = new UserTo(null, null, "newemail@ya.ru", "newPassword", 1500);
+        ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(newTo)))
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.VALIDATION_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL + "/register");
+        assertTrue(errorInfo.getDetails().contains("<br>[Name] must not be blank"));
+
+    }
+
+    @Test
+    void updateNotValidData() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", "newemail@ya.ru", "newPassword", 0);
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(updatedTo)))
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.VALIDATION_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL);
+        assertTrue(errorInfo.getDetails().contains("<br>[CaloriesPerDay] must be between 10 and 10000"));
+    }
+
 }

@@ -8,11 +8,13 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.util.exception.ErrorInfo;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -124,4 +126,36 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(MEAL_TO_MATCHER.contentJson(getTos(meals, user.getCaloriesPerDay())));
     }
+
+    @Test
+    void createNotValidData() throws Exception {
+        Meal meal = getNew();
+        meal.setCalories(0);
+        ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(meal))
+                .with(userHttpBasic(user)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.VALIDATION_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL);
+        assertTrue(errorInfo.getDetails().contains("<br>[Calories] must be between 10 and 5000"));
+    }
+
+    @Test
+    void updateNotValidData() throws Exception {
+        Meal updateMeal = getUpdated();
+        updateMeal.setDescription(null);
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(updateMeal))
+                .with(userHttpBasic(user)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.VALIDATION_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL + MEAL1_ID);
+        assertTrue(errorInfo.getDetails().contains("<br>[Description] must not be blank"));
+
+    }
+
 }
