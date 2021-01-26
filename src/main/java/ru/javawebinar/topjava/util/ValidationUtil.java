@@ -1,15 +1,11 @@
 package ru.javawebinar.topjava.util;
 
-import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.*;
-import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ValidationUtil {
 
@@ -77,15 +73,6 @@ public class ValidationUtil {
             result = cause;
         }
         return result;
-    }
-
-    public static List<String> getErrorResponse(BindingResult result) {
-        return result.getFieldErrors().stream()
-                .map(fe -> String.format("<br>" + "[%s] %s",
-                        fe.getField().substring(0, 1).toUpperCase(Locale.ROOT) + fe.getField().substring(1),
-                        fe.getDefaultMessage()))
-                .collect(Collectors.toList());
-
     }
 
 
