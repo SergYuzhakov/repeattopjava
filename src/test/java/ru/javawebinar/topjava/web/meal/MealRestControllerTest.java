@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.exception.ErrorInfo;
@@ -156,6 +158,23 @@ class MealRestControllerTest extends AbstractControllerTest {
         assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL + MEAL1_ID);
         assertTrue(errorInfo.getDetails().contains("<br>[Description] must not be blank"));
 
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicateDateTime() throws Exception {
+        Meal updateMeal = getUpdated();
+        updateMeal.setDateTime(meal2.getDateTime());
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(updateMeal))
+                .with(userHttpBasic(user)))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.DATA_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL + MEAL1_ID);
+        assertTrue(errorInfo.getDetails().contains("<br>Еда с такой датой и временем уже существует"));
     }
 
 }

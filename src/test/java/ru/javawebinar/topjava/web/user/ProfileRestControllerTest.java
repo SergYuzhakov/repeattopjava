@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
@@ -123,4 +125,38 @@ class ProfileRestControllerTest extends AbstractControllerTest {
         assertTrue(errorInfo.getDetails().contains("<br>[CaloriesPerDay] must be between 10 and 10000"));
     }
 
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicateEmail() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", user.getEmail(), "newPassword", 1500);
+        ResultActions action = perform(MockMvcRequestBuilders.put(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(JsonUtil.writeValue(updatedTo)))
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.DATA_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL);
+        assertTrue(errorInfo.getDetails().contains("<br>Пользователь с этим email уже существует"));
+
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void registerDuplicateEmail() throws Exception {
+        UserTo createTo = new UserTo(null, "newName", user.getEmail(), "newPassword", 1500);
+        ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(createTo)))
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+
+        ErrorInfo errorInfo = readFromJson(action, ErrorInfo.class);
+        assertEquals(errorInfo.getType(), ErrorType.DATA_ERROR);
+        assertEquals(errorInfo.getUrl(), "http://localhost" + REST_URL + "/register");
+        assertTrue(errorInfo.getDetails().contains("<br>Пользователь с этим email уже существует"));
+
+    }
 }
