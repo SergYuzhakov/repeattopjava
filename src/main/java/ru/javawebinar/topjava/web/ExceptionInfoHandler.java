@@ -113,7 +113,7 @@ public class ExceptionInfoHandler {
                 .collect(Collectors.toList());
     }
 
-    private static String getErrorMessage(Exception e) {
+    public static String getErrorMessage(Exception e) {
         String rootCauseMessage = ValidationUtil.getRootCause(e).getMessage();
         for (Map.Entry<String, String> entry : CONSTRAINS_I18N_MAP.entrySet()) {
             if (rootCauseMessage.contains(entry.getKey())) {
