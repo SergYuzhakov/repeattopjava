@@ -107,7 +107,7 @@ public class ExceptionInfoHandler {
 
     private static List<String> getErrorResponse(BindingResult result) {
         return result.getFieldErrors().stream()
-                .map(fe -> String.format("<br>" + "[%s] %s",
+                .map(fe -> String.format("[%s] %s",
                         fe.getField().substring(0, 1).toUpperCase(Locale.ROOT) + fe.getField().substring(1),
                         fe.getDefaultMessage()))
                 .collect(Collectors.toList());
@@ -117,7 +117,7 @@ public class ExceptionInfoHandler {
         String rootCauseMessage = ValidationUtil.getRootCause(e).getMessage();
         for (Map.Entry<String, String> entry : CONSTRAINS_I18N_MAP.entrySet()) {
             if (rootCauseMessage.contains(entry.getKey())) {
-                return messageSource.getMessage(entry.getValue(), null, Locale.getDefault());
+                return messageSource.getMessage(entry.getValue(), null, Locale.ROOT);
             }
         }
         return rootCauseMessage;

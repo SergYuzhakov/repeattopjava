@@ -2,7 +2,6 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,16 +22,6 @@ public class GlobalExceptionHandler {
         Throwable rootCause = ValidationUtil.getRootCause(e);
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         String message = rootCause.toString();
-
-        return getErrorView(rootCause, message, httpStatus);
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ModelAndView conflictEmail(HttpServletRequest req, Exception e) throws Exception {
-        log.error("Exception at request " + req.getRequestURL(), e);
-        Throwable rootCause = ValidationUtil.getRootCause(e);
-        HttpStatus httpStatus = HttpStatus.CONFLICT;
-        String message = ExceptionInfoHandler.getErrorMessage(e);
 
         return getErrorView(rootCause, message, httpStatus);
     }
